@@ -1,0 +1,146 @@
+
+# This pipeline is for comparing the publicly available AlphaFold2 structures deposited by Google DeepMind with
+# structures generated using ColabFold based on multiple sequence alignment clusters created using AF_Cluster. We then also compare
+# the autoinhibited ColabFold structures with the PDB structures to determine if they match any experimentally observed states.
+
+# We start with our classified file in which we have annotated the conformation and state of each protein.
+
+rule all:
+    input:
+        'data/ai_full-depth_pLDDT.tsv',
+        'data/md_full-depth_pLDDT.tsv',
+        'data/sd_full-depth_pLDDT.tsv',
+        'data/ai_cluster_pLDDT.tsv',
+        'data/md_cluster_pLDDT.tsv',
+        'data/ai_full-depth_cluster_compared.tsv',
+        'data/md_full-depth_cluster_compared.tsv',
+        'data/ai_cluster_interface.tsv',
+        'data/md_cluster_interface.tsv',
+        'data/ai_pdb_cluster_compared.tsv',
+        'data/md_pdb_cluster_compared.tsv'
+
+rule add_ai_clusters: # Add cluster information 
+    input:
+        'data/classified_files.tsv', # For autoinhibited proteins
+        'data/input/Colabfold_cif/autoinhibited/'
+    output:
+        'data/ai_pdb_clusters.tsv', # Contains UniProt IDs, PDB IDs, and Clusters for autoinhibitory proteins
+    script:
+        'scripts/clusters.py'
+
+rule add_md_clusters: # Add cluster information
+    input:
+        'data/md_rmsds.tsv',
+        'data/input/Colabfold_cif/multi_domain'
+    output:
+        'data/md_pdb_clusters.tsv' # Contains UniProt IDs, PDB IDs, and Clusters for multi-domain proteins
+    script:
+        'scripts/clusters.py'
+
+rule plddt: # Calculate average pLDDT for whole structure and each domain for AlphaFold2 and ColabFold structures.
+    input:
+        'data/classified_files.tsv',
+        'data/md_rmsds.tsv',
+        'data/single_domain_full-depth.tsv',
+        'data/ai_pdb_clusters.tsv',
+        'data/md_pdb_clusters.tsv',
+        'data/input/Alphafold_cif/',
+        'data/input/Alphafold_multi_domain/',
+        'data/input/Alphafold_single_domain/',
+        'data/input/Colabfold_cif/autoinhibited/',
+        'data/input/Colabfold_cif/multi_domain/'
+    output:
+        'data/ai_full-depth_pLDDT.tsv',
+        'data/md_full-depth_pLDDT.tsv',
+        'data/sd_full-depth_pLDDT.tsv',
+        'data/ai_cluster_pLDDT.tsv',
+        'data/md_cluster_pLDDT.tsv'
+    script:
+        'scripts/plddt.py'
+
+rule ai_compare: # Compare full-depth autoinhibited AlphaFold2 structures with ColabFold structures
+    input:
+        'data/ai_pdb_clusters.tsv',
+        'data/input/Alphafold_cif/',
+        'data/input/Colabfold_cif/autoinhibited/',
+        'data/output/colabfold_complexes/'
+    output:
+        'data/ai_full-depth_cluster_compared.tsv'
+    script:
+        'scripts/compare_afs.py'
+
+rule md_compare: # Compare our multi-domain Colabfold structures against the AlphaFold2 public structures.
+    input:
+        'data/md_pdb_clusters.tsv',
+        'data/input/Alphafold_multi_domain/',
+        'data/input/Colabfold_cif/multi_domain/',
+        'data/output/colabfold_complexes/'
+    output:
+        'data/md_full-depth_cluster_compared.tsv'
+    script:
+        'scripts/compare_afs.py'
+
+# Determine the interfaces of the autoinhibitory cluster structures and the obligate cluster structures
+rule ai_cluster_interface_analysis:
+    input:
+        'data/ai_pdb_clusters.tsv',
+        'data/input/Colabfold_cif/autoinhibited/'
+    output:
+        'data/ai_cluster_interface.tsv',
+    script:
+        'scripts/cf_interface_analysis.py'
+
+rule md_cluster_interface_analysis:
+    input:
+        'data/md_pdb_clusters.tsv',
+        'data/input/Colabfold_cif/multi_domain/'
+    output:
+        'data/md_cluster_interface.tsv'
+    script:
+        'scripts/cf_interface_analysis.py'
+
+rule ai_pdb_cluster_trim: # Trim the two-state autoinhibited ColabFold structures to the same length as the experimental structures.
+    input:
+        'data/input/RCSB_cif_best/', # Ground truth input path
+        'data/input/RCSB_cif_trim/', # Trimmed ground truth output path
+        'data/input/Colabfold_cif/autoinhibited/', # ColabFold input path
+        'data/input/Colabfold_pdb_trim/', # Trimmed Colabfold output path
+        'data/ai_pdb_clusters.tsv' # PDB ids and Colabfold file names
+    output:
+        'data/ai_pdb_cluster_trim_values.tsv'
+    script:
+        'scripts/trim_cf_pdb.py'
+
+rule md_pdb_cluster_trim:
+    input:
+        'data/input/RCSB_cif_best/', # Ground truth input path
+        'data/input/RCSB_cif_trim/', # Trimmed ground truth output path
+        'data/input/Colabfold_cif/multi_domain/', # ColabFold input path
+        'data/input/Colabfold_pdb_trim/', # Trimmed Colabfold output path # TODO: Change this back
+        'data/md_pdb_clusters.tsv' # PDB ids and Colabfold file names
+    output:
+        'data/md_pdb_cluster_trim_values.tsv'
+    script:
+        'scripts/trim_cf_pdb.py'
+
+rule compare_ai_pdb_clusters: # Compare autoinhibited Colabfold structures with PDB structures.
+    input:
+        'data/input/RCSB_cif_trim/',
+        'data/input/Colabfold_pdb_trim/',
+        'data/output/cf_pdb_complexes/',
+        'data/ai_pdb_cluster_trim_values.tsv'
+    output:
+        'data/ai_pdb_cluster_compared.tsv'
+    script:
+        'scripts/calculate_cf_pdb_rmsd.py'
+
+rule compare_md_pdb_clusters:
+    input:
+        'data/input/RCSB_cif_trim/',
+        'data/input/Colabfold_pdb_trim',
+        'data/output/cf_pdb_complexes',
+        'data/md_pdb_cluster_trim_values.tsv'
+    output:
+        'data/md_pdb_cluster_compared.tsv'
+    script:
+        'scripts/calculate_cf_pdb_rmsd.py'

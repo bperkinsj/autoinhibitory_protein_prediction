@@ -1,0 +1,91 @@
+rule all:
+    input:
+        'data/figures/rmsd_plot.png'
+
+# Determine pdb ids and chains.
+rule pdb_ids:
+    input:
+        'data/input/RCSB_cif/',
+        'data/input/Alphafold_cif/',
+        'data/proteins.tsv'
+        
+    output:
+        'data/proteins_by_pdb.tsv'
+        
+    script:
+        'scripts/pdb_ids.py'
+
+rule fix_offset:
+    input:
+        'data/input/RCSB_cif/',
+        'data/proteins_by_pdb.tsv'
+        
+    output:
+        'data/offset_fixed_proteins_by_pdb.tsv'
+        
+    script:
+        'scripts/fix_offset.py'
+
+rule trim_cifs:
+    input:
+        'data/input/RCSB_cif/', # Ground truth input path
+        'data/input/RCSB_cif_trim/', # Trimmed ground truth output path
+        'data/input/Alphafold_cif/', # Alphafold input path
+        'data/input/Alphafold_cif_trim/', # Trimmed Alphafold output path
+        'data/input/RCSB_cif_best/', # Best ground truth input path
+        'data/offset_fixed_proteins_by_pdb.tsv' # PDB ids and chains
+        
+    output:
+        'data/trim_values.tsv'
+        
+    script:
+        'scripts/trim_cifs.py'
+
+# Determine the pdb files where both domains are at least 80% complete, where domain 1 is at least 80% complete, 
+# where domain 2 is at least 80% complete, and where both domains are at least 60% complete. Determine the residues in each interface
+# that are interacting using the 60% complete pdb files.
+rule interface_analysis:
+    input:
+        'data/input/RCSB_cif_trim/',
+        'data/input/Alphafold_cif/',
+        'data/input/RCSB_cif_best/',
+        'data/trim_values.tsv',
+        'data/autoinhibited_proteins_no_structures_dokyun.csv'
+
+    output:
+        'data/proteins_pdb_summary.tsv',
+        'data/proteins_pdb_both_80.tsv',
+        'data/proteins_pdb_1_80.tsv',
+        'data/proteins_pdb_2_80.tsv',
+        'data/proteins_pdb_both_60.tsv',
+        'data/proteins_interface.tsv',
+        'data/proteins_largest_interface.tsv',
+        'data/alphafold_interface.tsv',
+        'data/dokyun_no_structures_interface.tsv'
+
+    script:
+        'scripts/interface_analysis.py'
+
+# Will probably have to reconfigure this.
+rule calculate_rmsds: # TODO: Chain needs to included in the final output, as well as region_1 and region_2
+    input:
+        'data/input/RCSB_cif_best/',
+        'data/input/Alphafold_cif_trim/',
+        'data/output/complexes/',
+        'data/proteins_pdb_both_60.tsv'
+
+    output:
+        'data/rmsds.tsv'
+
+    script:
+        'scripts/calculate_rmsd.py'
+
+rule rmsd_plot:
+    input:
+        'data/rmsds.tsv'
+
+    output:
+        'data/figures/rmsd_plot.png'
+
+    script:
+        'scripts/rmsd_plot.py'

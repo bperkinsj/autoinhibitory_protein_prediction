@@ -1,0 +1,89 @@
+rule all:
+    input:
+        'data/figures/md_rmsd_plot.png'
+
+# Determine pdb ids and chains.
+rule pdb_ids:
+    input:
+        'data/input/RCSB_cif/',
+        'data/input/Alphafold_multi_domain/',
+        'data/multi_domain.tsv'
+        
+    output:
+        'data/md_pdbs.tsv'
+        
+    script:
+        'scripts/pdb_ids.py'
+
+rule fix_offset:
+    input:
+        'data/input/RCSB_cif/',
+        'data/md_pdbs.tsv'
+        
+    output:
+        'data/md_pdb_offset_fixed.tsv'
+        
+    script:
+        'scripts/fix_offset.py'
+
+rule trim_cifs:
+    input:
+        'data/input/RCSB_cif/', # Ground truth input path
+        'data/input/RCSB_cif_trim/', # Trimmed ground truth output path
+        'data/input/Alphafold_multi_domain/', # Alphafold input path
+        'data/input/Alphafold_multi_domain_trim/', # Trimmed Alphafold output path
+        'data/input/RCSB_cif_best/', # Best ground truth input path
+        'data/md_pdb_offset_fixed.tsv' # PDB ids and chains
+        
+    output:
+        'data/md_trim_values.tsv'
+        
+    script:
+        'scripts/trim_cifs.py'
+
+# Determine the pdb files where both domains are at least 80% complete, where domain 1 is at least 80% complete, 
+# where domain 2 is at least 80% complete, and where both domains are at least 60% complete. Determine the residues in each interface
+# that are interacting using the 60% complete pdb files.
+rule interface_analysis:
+    input:
+        'data/input/RCSB_cif_trim/',
+        'data/input/Alphafold_multi_domain/',
+        'data/input/RCSB_cif_best/',
+        'data/md_trim_values.tsv'
+
+    output:
+        'data/md_proteins_pdb_summary.tsv',
+        'data/md_proteins_pdb_both_80.tsv',
+        'data/md_proteins_pdb_1_80.tsv',
+        'data/md_proteins_pdb_2_80.tsv',
+        'data/md_proteins_pdb_both_60.tsv',
+        'data/md_proteins_interface.tsv',
+        'data/md_proteins_largest_interface.tsv',
+        'data/md_alphafold_interface.tsv'
+
+    script:
+        'scripts/md_interface_analysis.py'
+
+# Calculate various RMSDs (complex, domain 1 to domain 1, domain 1 to domain 2, domain 2 to domain 2)
+rule calculate_rmsds:
+    input:
+        'data/input/RCSB_cif_best/',
+        'data/input/Alphafold_multi_domain_trim/',
+        'data/output/complexes/',
+        'data/md_proteins_pdb_both_60.tsv'
+
+    output:
+        'data/md_rmsds.tsv'
+
+    script:
+        'scripts/calculate_rmsd.py'
+
+rule rmsd_plot:
+    input:
+        'data/md_rmsds.tsv'
+
+    output:
+        'data/figures/md_rmsd_plot.png'
+
+    script:
+        'scripts/rmsd_plot.py'
