@@ -54,3 +54,4 @@ The final output will be to the file ```./project_pipeline/data/rmsds.tsv```.
 
 ## Re-creating figures
 
+All plots can be re-created by running all cells in paper_figs.ipynb, paper_lineage_score.ipynb, and structural_clustering.ipynb. Composite figures were created in Inkscape alongside some manual editing of axis labels for a few figures such as the number of base or alternate conformations.
