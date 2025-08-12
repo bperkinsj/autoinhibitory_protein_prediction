@@ -34,7 +34,7 @@ Contains code to generate the Shannon entropy and lineage score figures.
 ### structural_clustering.ipynb
 Contains code to perform hierarchical clustering of the experimental structures and generate the plot.
 
-## The pipeline
+## The Pipeline
 
 ### Part 1: Install the environment
 - Make sure you have [Anaconda](https://www.anaconda.com/download) installed.
@@ -42,10 +42,12 @@ Contains code to perform hierarchical clustering of the experimental structures 
 - To install the ```rmsd_snek``` environment, follow the documentation on [creating an environment from an environment.yml file](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file).
   * Please note the [dependencies](https://github.com/bperkinsj/autoinhibitory_protein_prediction/blob/main/environments/rmsd_snek.yml) that are required.
 
+
 ### Part 2: Running the pipeline
+
 1. Check file format.
 
-The first step of the pipeline is the ```Snakefile``` in the ```project_pipeline``` folder. The pipeline requires a tab-separated (tsv) file in the format
+Verify that your input file is in the correct format for the ```Snakefile``` in the ```project_pipeline``` folder. The pipeline requires a tab-separated (tsv) file in the format shown below:
 
 | uniprot | region_1 | region_2 |
 | ---     | ---      | ---      | 
@@ -53,21 +55,17 @@ The first step of the pipeline is the ```Snakefile``` in the ```project_pipeline
 
 where "uniprot" is the UniProt ID, "region_1" is the sequence range of the inhibitory module, and "region_2" is the sequence range of the functional domain. It also requires all of the AlphaFold-predicted files to be placed in ```data/Alphafold_cif```. Once those are provided, the pipeline can be run as per normal Snakemake.
 
-2. Navigate to the folder
-
-Navigate to the project_pipeline folder:
+2. Navigate to the project pipeline folder
 
 $ cd ./project_pipeline/
 
 3. Run Snakemake
 
-Run Snakemake with the following command:
-
 $ snakemake -s Snakefile --cores
 
 The final output will be to the file ```./project_pipeline/data/rmsds.tsv```.
 
-4. Additional notes
+#### Additional notes
 
 If you need to adjust the filename for the file you're passing to Snakemake, you can go into the Snakefile (```./project_pipeline/Snakefile```) and under rule pdb_ids change the input file 'data/proteins.tsv' to whatever your file is (i.e. 'data/proteins_to_measure.tsv') or such. Make sure that the file is tab-separated.
 
