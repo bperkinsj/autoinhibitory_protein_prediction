@@ -1,7 +1,10 @@
 # Autoinhibitory Protein Prediction
-This repository contains the main component of the pipeline for comparing AlphaFold2-generated predictions to experimental structures.
+
+## Abstract
+Many proteins operate by toggling between distinct conformations, yet most structure predictors remain fixated on a single static fold. We benchmarked AlphaFold2, AlphaFold3, and recent variants on autoinhibited proteins, a type of allosterically regulated protein whose sequences encode at least two functional states. AlphaFold consistently assigned lower confidence to these flexible proteins, indicating it has internalized aspects of energy landscapes. AlphaFold3 showed the highest accuracy when supplied with post-translational modifications or binding partners, correctly modeling both functional states in ~50\% of cases—though this relied on prior knowledge.  Without such cues, uniform MSA subsampling, not signal deconvolution, was unexpectedly more effective in capturing alternative conformations, particularly when using diverse sequences. We also found that predicted aligned error (PAE) outperformed pLDDT in assessing model quality. Overall, we propose the use of full-depth and uniformly subsampled MSAs combined with low PAE selection for known autoinhibited proteins,  which yields higher-confidence predictions, often favoring compact, closed conformations that may offer insight into regulatory mechanisms. By analyzing over 100 previously untested proteins, our study also highlights key challenges in predicting structures shaped by complex, evolved energy landscapes.
 
 ## Contents
+This repository contains the main component of the pipeline for comparing AlphaFold2-generated predictions to experimental structures.
 
 ### environments
 Contains the necessary environments to run the pipeline and Jupyter notebooks. Requires [Anaconda](https://www.anaconda.com/download).
@@ -33,13 +36,16 @@ Contains code to perform hierarchical clustering of the experimental structures 
 
 ## The pipeline
 
-### 1. Install the environment
-Make sure you have [Anaconda](https://www.anaconda.com/download) installed.
+### Part 1: Install the environment
+- Make sure you have [Anaconda](https://www.anaconda.com/download) installed.
 
-To install the ```rmsd_snek``` environment, follow the documentation on [creating an environment from an environment.yml file](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file).
+- To install the ```rmsd_snek``` environment, follow the documentation on [creating an environment from an environment.yml file](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file).
+  * Please note the [dependencies](https://github.com/bperkinsj/autoinhibitory_protein_prediction/blob/main/environments/rmsd_snek.yml) that are required.
 
-### 2. Running the pipeline
-a. The first step of the pipeline is the ```Snakefile``` in the ```project_pipeline``` folder. The pipeline requires a tab-separated (tsv) file in the format
+### Part 2: Running the pipeline
+1. Check file format.
+
+The first step of the pipeline is the ```Snakefile``` in the ```project_pipeline``` folder. The pipeline requires a tab-separated (tsv) file in the format
 
 | uniprot | region_1 | region_2 |
 | ---     | ---      | ---      | 
@@ -47,18 +53,27 @@ a. The first step of the pipeline is the ```Snakefile``` in the ```project_pipel
 
 where "uniprot" is the UniProt ID, "region_1" is the sequence range of the inhibitory module, and "region_2" is the sequence range of the functional domain. It also requires all of the AlphaFold-predicted files to be placed in ```data/Alphafold_cif```. Once those are provided, the pipeline can be run as per normal Snakemake.
 
-First, navigate to the project_pipeline folder:
+2. Navigate to the folder
+
+Navigate to the project_pipeline folder:
 
 $ cd ./project_pipeline/
 
-and then run Snakemake with the following command:
+3. Run Snakemake
+
+Run Snakemake with the following command:
 
 $ snakemake -s Snakefile --cores
 
-If you need to adjust the filename for the file you're passing to Snakemake, you can go into the Snakefile (```./project_pipeline/Snakefile```) and under rule pdb_ids change the input file 'data/proteins.tsv' to whatever your file is (i.e. 'data/proteins_to_measure.tsv') or such. Make sure that the file is tab-separated.
-
 The final output will be to the file ```./project_pipeline/data/rmsds.tsv```.
+
+4. Additional notes
+
+If you need to adjust the filename for the file you're passing to Snakemake, you can go into the Snakefile (```./project_pipeline/Snakefile```) and under rule pdb_ids change the input file 'data/proteins.tsv' to whatever your file is (i.e. 'data/proteins_to_measure.tsv') or such. Make sure that the file is tab-separated.
 
 ## Re-creating figures
 
 All plots can be re-created by running all cells in paper_figs.ipynb, paper_lineage_score.ipynb, and structural_clustering.ipynb. Composite figures were created in Inkscape alongside some manual editing of axis labels for a few figures such as the number of base or alternate conformations.
+
+## Issues
+If you have any questions or problems please leave a comment under the Issues tab.
