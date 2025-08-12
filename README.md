@@ -12,6 +12,13 @@ The pipeline used for analyzing high-throughput structural data can be found her
 ### source_protein_lists
 Contains the original autoinhibitory protein lists provided by Dr. Dokyun Na and supplemented by Jorge A. Holguin-Cruz and Brooks Perkins-Jechow.
 
+| file | description |
+| ---  | ---         |
+| Autoinhibited proteins (more added by Brooks) | Original curated list provided by Dr. Dokyun Na, with additional proteins manually added by Brooks Perkins-Jechow (see paper for methods). Contains annotations of evidence for autoinhbiition in selected proteins. |
+| Jorge_Algonquin_Autoinhibition_Proteins_w_Structures | Curated list provided by Jorge Holguin-Cruz. Provides references to sourced literature. |
+| autoinhibited_proteins_no_autoinhibited_structures_dokyun_na | List of autoinhibited proteins with no known autoinhibited structures in the PDB. Provided by Dr. Dokyun Na. |
+| autoinhibited_proteins_no_structures_dokyun_na | List of autoinhibited proteins with no known structures in the PDB. Provided by Dr. Dokyun Na. |
+
 ### multi_domain.ipynb
 Contains code to collect the list of multi-domain proteins from the PDB.
 
@@ -26,13 +33,13 @@ Contains code to perform hierarchical clustering of the experimental structures 
 
 ## The pipeline
 
-### Install the environment
+### 1. Install the environment
 Make sure you have [Anaconda](https://www.anaconda.com/download) installed.
 
 To install the ```rmsd_snek``` environment, follow the documentation on [creating an environment from an environment.yml file](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file).
 
-### Running the pipeline
-The first step of the pipeline is the ```Snakefile``` in the ```project_pipeline``` folder. The pipeline requires a tab-separated (tsv) file in the format
+### 2. Running the pipeline
+a. The first step of the pipeline is the ```Snakefile``` in the ```project_pipeline``` folder. The pipeline requires a tab-separated (tsv) file in the format
 
 | uniprot | region_1 | region_2 |
 | ---     | ---      | ---      | 
