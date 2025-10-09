@@ -1,5 +1,8 @@
 # Autoinhibitory Protein Prediction
 
+[![DOI](https://zenodo.org/badge/978359796.svg)](https://doi.org/10.5281/zenodo.17307831)
+
+
 ## Abstract
 Many proteins operate by toggling between distinct conformations, yet most structure predictors remain fixated on a single static fold. We benchmarked AlphaFold2, AlphaFold3, and recent variants on autoinhibited proteins, a type of allosterically regulated protein whose sequences encode at least two functional states. AlphaFold consistently assigned lower confidence to these flexible proteins, indicating it has internalized aspects of energy landscapes. AlphaFold3 showed the highest accuracy when supplied with post-translational modifications or binding partners, correctly modeling both functional states in ~50\% of cases—though this relied on prior knowledge.  Without such cues, uniform MSA subsampling, not signal deconvolution, was unexpectedly more effective in capturing alternative conformations, particularly when using diverse sequences. We also found that predicted aligned error (PAE) outperformed pLDDT in assessing model quality. Overall, we propose the use of full-depth and uniformly subsampled MSAs combined with low PAE selection for known autoinhibited proteins,  which yields higher-confidence predictions, often favoring compact, closed conformations that may offer insight into regulatory mechanisms. By analyzing over 100 previously untested proteins, our study also highlights key challenges in predicting structures shaped by complex, evolved energy landscapes.
 
